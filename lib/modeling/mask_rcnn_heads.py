@@ -12,6 +12,68 @@ from modeling import ResNet
 import nn as mynn
 import utils.net as net_utils
 
+def dice_loss(pred, target):
+    """This definition generalize to real valued pred and target vector.
+This should be differentiable.
+    pred: tensor with first dimension as batch
+    target: tensor with first dimension as batch
+    """
+
+    smooth = 1.
+
+    # have to use contiguous since they may from a torch.view op
+    iflat = pred.contiguous().view(-1)
+    tflat = target.contiguous().view(-1)
+    intersection = (iflat * tflat).sum()
+
+    A_sum = torch.sum(tflat * iflat)
+    B_sum = torch.sum(tflat * tflat)
+    
+    return 1 - ((2. * intersection + smooth) / (A_sum + B_sum + smooth) )
+
+
+class FocalLoss(nn.Module):
+    def __init__(self, gamma):
+        super().__init__()
+        self.gamma = gamma
+        
+    def forward(self, input, target):
+        # Inspired by the implementation of binary_cross_entropy_with_logits
+        if not (target.size() == input.size()):
+            raise ValueError("Target size ({}) must be the same as input size ({})".format(target.size(), input.size()))
+
+        max_val = (-input).clamp(min=0)
+        loss = input - input * target + max_val + ((-max_val).exp() + (-input - max_val).exp()).log()
+
+        # This formula gives us the log sigmoid of 1-p if y is 0 and of p if y is 1
+        invprobs = F.logsigmoid(-input * (target * 2 - 1))
+        loss = (invprobs * self.gamma).exp() * loss
+        
+        return loss.mean()
+
+def flatten_probas(probas, labels, ignore=None):
+    """
+    Flattens predictions in the batch
+    """
+    B, C, H, W = probas.size()
+    probas = probas.permute(0, 2, 3, 1).contiguous().view(-1, C)  # B * H * W, C = P, C
+    labels = labels.view(-1)
+    if ignore is None:
+        return probas, labels
+    valid = (labels != ignore)
+    vprobas = probas[valid.nonzero().squeeze()]
+    vlabels = labels[valid]
+    return vprobas, vlabels
+
+def xloss(logits, labels, ignore=None):
+    """
+    Cross entropy loss
+    """
+    return F.cross_entropy(logits, Variable(labels), ignore_index=255)
+
+
+
+
 
 # ---------------------------------------------------------------------------- #
 # Mask R-CNN outputs and losses
@@ -96,10 +158,12 @@ def mask_rcnn_losses(masks_pred, masks_int32):
     n_rois, n_classes, _, _ = masks_pred.size()
     device_id = masks_pred.get_device()
     masks_gt = Variable(torch.from_numpy(masks_int32.astype('float32'))).cuda(device_id)
-    weight = (masks_gt > -1).float()  # masks_int32 {1, 0, -1}, -1 means ignore
-    loss = F.binary_cross_entropy_with_logits(
-        masks_pred.view(n_rois, -1), masks_gt, weight, size_average=False)
-    loss /= weight.sum()
+    #weight = (masks_gt > -1).float()  # masks_int32 {1, 0, -1}, -1 means ignore
+#    loss = F.binary_cross_entropy_with_logits(
+#        masks_pred.view(n_rois, -1), masks_gt, weight, size_average=False)
+    #loss /= weight.sum()
+    Focal_function=FocalLoss(gamma=2)
+    loss=Focal_function(masks_pred.view(n_rois, -1),masks_gt)
     return loss * cfg.MRCNN.WEIGHT_LOSS_MASK
 
 

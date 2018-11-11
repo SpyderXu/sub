@@ -156,6 +156,15 @@ def main():
     elif args.dataset == "keypoints_coco2017":
         cfg.TRAIN.DATASETS = ('keypoints_coco_2017_train',)
         cfg.MODEL.NUM_CLASSES = 2
+    elif args.dataset == "kitti":
+        cfg.TRAIN.DATASETS="KITTI_train"
+        cfg.MODEL.NUM_CLASSES=4
+    elif args.dataset == "airbus":
+        cfg.TRAIN.DATASETS="AirBus_train"
+        cfg.MODEL.NUM_CLASSES=2
+    elif args.dataset == "baidu":
+        cfg.TRAIN.DATASETS="Baidu_train"
+        cfg.MODEL.NUM_CLASSES=8
     else:
         raise ValueError("Unexpected args.dataset: {}".format(args.dataset))
 

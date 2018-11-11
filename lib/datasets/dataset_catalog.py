@@ -216,5 +216,41 @@ DATASETS = {
             _DATA_DIR + '/VOC2012/annotations/voc_2012_trainval.json',
         DEVKIT_DIR:
             _DATA_DIR + '/VOC2012/VOCdevkit2012'
+    },
+    'KITTI_train':{
+        IM_DIR:
+            '/data/XCZ/KITTI/images/training/image_2',
+        ANN_FN:
+            '/data/XCZ/KITTI/kitti_train.json'
+    },
+    'KITTI_val':{
+        IM_DIR:
+            '/data/XCZ/KITTI/images/training/image_2',
+        ANN_FN:
+            '/data/XCZ/KITTI/kitti_val.json'
+    },
+    'AirBus_train':{
+        IM_DIR:
+            '/data/XCZ/kaggle/AirBus/train',
+        ANN_FN:
+            '/data/XCZ/kaggle/AirBus/AirBus_train.json'
+    },
+    'AirBus_test':{
+        IM_DIR:
+            '/data/XCZ/kaggle/AirBus/test',
+        ANN_FN:
+            '/data/XCZ/kaggle/AirBus/AirBus_test.json'
+    },
+    'Baidu_train':{
+        IM_DIR:
+            '/data/XCZ/baidu/train_crop',
+        ANN_FN:
+            '/data/XCZ/baidu/baidu_train.json'
+    },
+    'Baidu_test':{
+        IM_DIR:
+            '/data/XCZ/baidu/test_crop',
+        ANN_FN:
+            '/data/XCZ/baidu/baidu_test.json'
     }
 }

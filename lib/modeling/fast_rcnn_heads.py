@@ -9,6 +9,46 @@ import nn as mynn
 import utils.net as net_utils
 
 
+def focal_loss(inputs, targets):
+    class_num=2
+    alpha=None
+    if alpha is None:
+        alpha = Variable(torch.ones(class_num, 1))
+    else:
+        if isinstance(alpha, Variable):
+            alpha = alpha
+        else:
+            alpha = Variable(alpha)
+    gamma=2
+    size_average=True
+    
+    N = inputs.size(0)
+    C = inputs.size(1)
+    P = F.softmax(inputs)
+
+    class_mask = inputs.data.new(N, C).fill_(0)
+    class_mask = Variable(class_mask)
+    ids = targets.view(-1, 1)
+    class_mask.scatter_(1, ids.data, 1.)
+
+
+    if inputs.is_cuda and not alpha.is_cuda:
+        alpha = alpha.cuda()
+    alpha = alpha[ids.data.view(-1)]
+
+    probs = (P*class_mask).sum(1).view(-1,1)
+
+    log_p = probs.log()
+
+    batch_loss = -alpha*(torch.pow((1-probs), gamma))*log_p 
+
+
+    if size_average:
+        loss = batch_loss.mean()
+    else:
+        loss = batch_loss.sum()
+    return loss
+
 class fast_rcnn_outputs(nn.Module):
     def __init__(self, dim_in):
         super().__init__()
@@ -51,7 +91,8 @@ def fast_rcnn_losses(cls_score, bbox_pred, label_int32, bbox_targets,
                      bbox_inside_weights, bbox_outside_weights):
     device_id = cls_score.get_device()
     rois_label = Variable(torch.from_numpy(label_int32.astype('int64'))).cuda(device_id)
-    loss_cls = F.cross_entropy(cls_score, rois_label)
+    #loss_cls = F.cross_entropy(cls_score, rois_label)
+    loss_cls=focal_loss(cls_score, rois_label)
 
     bbox_targets = Variable(torch.from_numpy(bbox_targets)).cuda(device_id)
     bbox_inside_weights = Variable(torch.from_numpy(bbox_inside_weights)).cuda(device_id)
