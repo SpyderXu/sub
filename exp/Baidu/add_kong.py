@@ -1,6 +1,6 @@
 import pandas as pd
 import json
-image_dicts=json.load(open("../baidu_test.json"))
+image_dicts=json.load(open("baidu_test.json"))
 image_names=image_dicts["images"]
 img_names=[]
 out=open("sub_110.csv","a+")
