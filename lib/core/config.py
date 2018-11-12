@@ -670,7 +670,7 @@ __C.RPN.SIZES = (64, 128, 256, 512)
 __C.RPN.STRIDE = 16
 
 # RPN anchor aspect ratios
-__C.RPN.ASPECT_RATIOS = (0.2,0.5, 1, 2,5)
+__C.RPN.ASPECT_RATIOS = (0.5, 1, 2)
 
 
 # ---------------------------------------------------------------------------- #
@@ -717,7 +717,7 @@ __C.FPN.RPN_ASPECT_RATIOS = (0.2,0.5, 1, 2,5)
 # RPN anchors start at this size on RPN_MIN_LEVEL
 # The anchor size doubled each level after that
 # With a default of 32 and levels 2 to 6, we get anchor sizes of 32 to 512
-__C.FPN.RPN_ANCHOR_START_SIZE = 8
+__C.FPN.RPN_ANCHOR_START_SIZE = 4
 # [Infered Value] Scale for RPN_POST_NMS_TOP_N.
 # Automatically infered in training, fixed to 1 in testing.
 __C.FPN.RPN_COLLECT_SCALE = 1
